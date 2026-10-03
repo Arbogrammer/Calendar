@@ -110,15 +110,17 @@
 
             <org.fossify.commons.views.MyTextView
                 android:id="@+id/event_category_suggestions"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/event_categories"
                 android:layout_marginStart="@dimen/activity_margin"
                 android:layout_marginTop="@dimen/small_margin"
+                android:layout_marginEnd="@dimen/activity_margin"
                 android:background="?attr/selectableItemBackground"
-                android:padding="@dimen/small_margin"
+                android:paddingTop="@dimen/normal_margin"
+                android:paddingBottom="@dimen/normal_margin"
                 android:text="@string/select_existing_categories"
-                android:textSize="@dimen/smaller_text_size" />
+                android:textSize="@dimen/day_text_size" />
 
             <ImageView
                 android:id="@+id/event_category_color_image"

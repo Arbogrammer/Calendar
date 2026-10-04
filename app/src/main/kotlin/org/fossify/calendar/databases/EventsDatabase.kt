@@ -22,9 +22,11 @@ import org.fossify.calendar.models.Widget
 import org.fossify.commons.extensions.getProperPrimaryColor
 import java.util.concurrent.Executors
 
+private const val CATEGORIES_DATABASE_VERSION = 12
+
 @Database(
     entities = [Event::class, CalendarEntity::class, Widget::class, Task::class],
-    version = 12
+    version = CATEGORIES_DATABASE_VERSION
 )
 @TypeConverters(Converters::class)
 abstract class EventsDatabase : RoomDatabase() {
@@ -184,7 +186,7 @@ abstract class EventsDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_11_12 = object : Migration(11, 12) {
+        private val MIGRATION_11_12 = object : Migration(11, CATEGORIES_DATABASE_VERSION) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE events ADD COLUMN categories TEXT NOT NULL DEFAULT '[]'")
             }

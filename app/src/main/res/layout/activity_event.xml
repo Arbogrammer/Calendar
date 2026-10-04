@@ -152,7 +152,6 @@
                     android:layout_toStartOf="@+id/event_category_color"
                     android:paddingTop="@dimen/normal_margin"
                     android:paddingBottom="@dimen/normal_margin"
-                    android:text="@string/category_color"
                     android:textSize="@dimen/day_text_size" />
 
                 <ImageView

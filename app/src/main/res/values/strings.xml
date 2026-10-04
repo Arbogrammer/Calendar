@@ -34,7 +34,7 @@
     <string name="event_color">Event color</string>
     <string name="default_calendar_color">Default calendar color</string>
     <string name="categories_hint">Categories (separate with commas)</string>
-    <string name="category_color">Category color</string>
+    <string name="category_color">Category color: %1$s</string>
     <string name="select_existing_categories">Select existing categories</string>
 
     <!-- Tasks -->

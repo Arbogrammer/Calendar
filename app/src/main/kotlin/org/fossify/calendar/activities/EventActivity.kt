@@ -21,7 +21,6 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.RelativeLayout
-import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.net.toUri
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -39,6 +38,7 @@ import org.fossify.calendar.dialogs.ReminderWarningDialog
 import org.fossify.calendar.dialogs.RepeatLimitTypePickerDialog
 import org.fossify.calendar.dialogs.RepeatRuleWeeklyDialog
 import org.fossify.calendar.dialogs.SelectCalendarDialog
+import org.fossify.calendar.dialogs.SelectCategoriesDialog
 import org.fossify.calendar.dialogs.SelectEventColorDialog
 import org.fossify.calendar.extensions.calDAVHelper
 import org.fossify.calendar.extensions.calendarsDB
@@ -59,10 +59,10 @@ import org.fossify.calendar.extensions.showEventRepeatIntervalDialog
 import org.fossify.calendar.helpers.ATTENDEES
 import org.fossify.calendar.helpers.AVAILABILITY
 import org.fossify.calendar.helpers.CALDAV
-import org.fossify.calendar.helpers.CategoryColorHelper
 import org.fossify.calendar.helpers.CALENDAR_ID
 import org.fossify.calendar.helpers.CLASS
 import org.fossify.calendar.helpers.CURRENT_TIME_ZONE
+import org.fossify.calendar.helpers.CategoryColorHelper
 import org.fossify.calendar.helpers.DELETE_ALL_OCCURRENCES
 import org.fossify.calendar.helpers.DELETE_FUTURE_OCCURRENCES
 import org.fossify.calendar.helpers.DELETE_SELECTED_OCCURRENCE
@@ -168,7 +168,6 @@ import org.fossify.commons.models.RadioItem
 import org.fossify.commons.views.MyAutoCompleteTextView
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
-import java.util.Locale
 import java.util.TimeZone
 import java.util.regex.Pattern
 
@@ -713,32 +712,14 @@ class EventActivity : SimpleActivity() {
 
     private fun showCategorySuggestions() {
         ensureBackgroundThread {
-            val knownCategories = eventsDB.getAllEvents()
-                .flatMap { it.categories }
-                .map { it.trim() }
-                .filter { it.isNotEmpty() }
-                .distinctBy { it.lowercase(Locale.ROOT) }
-                .sortedWith(String.CASE_INSENSITIVE_ORDER)
+            val knownCategories = eventsDB.getAllEvents().flatMap { it.categories }
             runOnUiThread {
-                if (knownCategories.isEmpty()) {
-                    toast(org.fossify.commons.R.string.no_items_found)
+                if (isFinishing || isDestroyed) {
                     return@runOnUiThread
                 }
-                val selected = getCategories().map { it.lowercase(Locale.ROOT) }.toMutableSet()
-                val checked = knownCategories.map { it.lowercase(Locale.ROOT) in selected }.toBooleanArray()
-                AlertDialog.Builder(this)
-                    .setTitle(R.string.select_existing_categories)
-                    .setMultiChoiceItems(knownCategories.toTypedArray(), checked) { _, which, isChecked ->
-                        val category = knownCategories[which].lowercase(Locale.ROOT)
-                        if (isChecked) selected.add(category) else selected.remove(category)
-                    }
-                    .setPositiveButton(android.R.string.ok) { _, _ ->
-                        binding.eventCategories.setText(
-                            knownCategories.filter { it.lowercase(Locale.ROOT) in selected }.joinToString(", ")
-                        )
-                    }
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .show()
+                SelectCategoriesDialog(this, getCategories(), knownCategories) { categories ->
+                    binding.eventCategories.setText(categories.joinToString(", "))
+                }
             }
         }
     }
@@ -1527,7 +1508,7 @@ class EventActivity : SimpleActivity() {
         if (category != null) {
             val color = CategoryColorHelper.colorFor(this, category) ?: return
             binding.eventCategoryColor.setFillWithStroke(color, getProperBackgroundColor())
-            binding.eventCategoryColorText.text = getString(R.string.category_color) + ": $category"
+            binding.eventCategoryColorText.text = getString(R.string.category_color, category)
         }
     }
 
@@ -2492,7 +2473,8 @@ class EventActivity : SimpleActivity() {
             eventStatusImage,
             eventAccessLevelImage,
             eventAvailabilityImage,
-            eventColorImage
+            eventColorImage,
+            eventCategoryColorImage
         ).forEach {
             it.applyColorFilter(textColor)
         }
